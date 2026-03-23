@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, UserCheck, Briefcase, Upload, TrendingUp,
-  Calendar, Bot, Activity, LogOut, Stethoscope
+  Calendar, Bot, Activity, LogOut, Stethoscope, BookOpen
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -22,6 +22,7 @@ const adminNav: NavItem[] = [
   { to: '/admin/cardex', icon: <Upload size={20} />, label: 'Cardex' },
   { to: '/admin/sales', icon: <TrendingUp size={20} />, label: 'Ventas' },
   { to: '/admin/agent', icon: <Bot size={20} />, label: 'Agente IA' },
+  { to: '/admin/knowledge', icon: <BookOpen size={20} />, label: 'Base de Conocimiento' },
 ];
 
 const repNav: NavItem[] = [

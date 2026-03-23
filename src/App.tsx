@@ -15,6 +15,7 @@ import Tracking from './pages/admin/Tracking';
 import RepDashboard from './pages/rep/RepDashboard';
 import RepCalendar from './pages/rep/RepCalendar';
 import AIAgent from './pages/AIAgent';
+import KnowledgeBase from './pages/KnowledgeBase';
 
 function PrivateRoute({ children, role }: { children: React.ReactNode; role?: 'admin' | 'rep' }) {
   const { user } = useAuth();
@@ -44,6 +45,7 @@ function AppRoutes() {
               <Route path="cardex" element={<CardexUpload />} />
               <Route path="sales" element={<SalesUpload />} />
               <Route path="agent" element={<AIAgent />} />
+              <Route path="knowledge" element={<KnowledgeBase />} />
             </Routes>
           </Layout>
         </PrivateRoute>

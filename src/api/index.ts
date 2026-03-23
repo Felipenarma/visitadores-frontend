@@ -104,6 +104,15 @@ export const agentApi = {
     api.post<{ response: string; conversation_history: AgentMessage[] }>('/agent/chat', data).then(r => r.data),
 };
 
+// Knowledge Base
+export const knowledgeApi = {
+  getAll: (category?: string) => api.get('/knowledge', { params: category ? { category } : {} }).then(r => r.data),
+  getCategories: () => api.get('/knowledge/categories').then(r => r.data),
+  create: (data: any) => api.post('/knowledge', data).then(r => r.data),
+  update: (id: number, data: any) => api.put(`/knowledge/${id}`, data).then(r => r.data),
+  delete: (id: number) => api.delete(`/knowledge/${id}`).then(r => r.data),
+};
+
 // Seed
 export const seedApi = {
   seed: () => api.post('/seed').then(r => r.data),
