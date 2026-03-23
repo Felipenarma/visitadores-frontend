@@ -111,6 +111,15 @@ export const knowledgeApi = {
   create: (data: any) => api.post('/knowledge', data).then(r => r.data),
   update: (id: number, data: any) => api.put(`/knowledge/${id}`, data).then(r => r.data),
   delete: (id: number) => api.delete(`/knowledge/${id}`).then(r => r.data),
+  upload: (file: File, category: string, businessLineId?: number) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('category', category);
+    if (businessLineId) formData.append('business_line_id', String(businessLineId));
+    return api.post('/knowledge/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data);
+  },
 };
 
 // Seed
