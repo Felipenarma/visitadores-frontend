@@ -22,6 +22,8 @@ export interface MedicalRep {
 export interface Doctor {
   id: number;
   name: string;
+  rut?: string;
+  medical_center?: string;
   specialty?: string;
   address?: string;
   phone?: string;
