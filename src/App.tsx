@@ -14,6 +14,7 @@ import AdminCalendar from './pages/admin/AdminCalendar';
 import Tracking from './pages/admin/Tracking';
 import RepDashboard from './pages/rep/RepDashboard';
 import RepCalendar from './pages/rep/RepCalendar';
+import RepDoctors from './pages/rep/RepDoctors';
 import AIAgent from './pages/AIAgent';
 import KnowledgeBase from './pages/KnowledgeBase';
 
@@ -58,6 +59,7 @@ function AppRoutes() {
             <Routes>
               <Route path="dashboard" element={<RepDashboard />} />
               <Route path="calendar" element={<RepCalendar />} />
+              <Route path="doctors" element={<RepDoctors />} />
               <Route path="agent" element={<AIAgent />} />
             </Routes>
           </Layout>

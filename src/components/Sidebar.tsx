@@ -28,6 +28,7 @@ const adminNav: NavItem[] = [
 const repNav: NavItem[] = [
   { to: '/rep/dashboard', icon: <LayoutDashboard size={20} />, label: 'Mi Dashboard' },
   { to: '/rep/calendar', icon: <Calendar size={20} />, label: 'Mi Calendario' },
+  { to: '/rep/doctors', icon: <Stethoscope size={20} />, label: 'Mis Médicos' },
   { to: '/rep/agent', icon: <Bot size={20} />, label: 'Agente IA' },
 ];
 
