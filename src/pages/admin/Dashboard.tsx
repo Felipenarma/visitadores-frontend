@@ -13,7 +13,7 @@ import { es } from 'date-fns/locale';
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [todayVisits, setTodayVisits] = useState<TodayVisit[]>([]);
-  const [visitsByRep, setVisitsByRep] = useState<{ rep_name: string; visits: number }[]>([]);
+  const [visitsByRep, setVisitsByRep] = useState<{ rep_name: string; completed: number; total: number }[]>([]);
   const [salesByLine, setSalesByLine] = useState<{ name: string; value: number; color: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Visits by rep */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Visitas por Visitador (este mes)</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Visitas Completadas por Visitador (este mes)</h2>
           {visitsByRep.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={visitsByRep}>
@@ -181,7 +181,9 @@ export default function AdminDashboard() {
                 <XAxis dataKey="rep_name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Bar dataKey="visits" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Visitas" />
+                <Legend />
+                <Bar dataKey="completed" fill="#22c55e" radius={[4, 4, 0, 0]} name="Completadas" />
+                <Bar dataKey="total" fill="#d1d5db" radius={[4, 4, 0, 0]} name="Total programadas" />
               </BarChart>
             </ResponsiveContainer>
           ) : (

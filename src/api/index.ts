@@ -93,7 +93,7 @@ export const cardexApi = {
 export const dashboardApi = {
   getStats: () => api.get<DashboardStats>('/dashboard/stats').then(r => r.data),
   getTodayVisits: () => api.get<TodayVisit[]>('/dashboard/today').then(r => r.data),
-  getVisitsByRep: () => api.get<{ rep_name: string; visits: number; rep_id: number }[]>('/dashboard/visits-by-rep').then(r => r.data),
+  getVisitsByRep: () => api.get<{ rep_name: string; completed: number; total: number; rep_id: number }[]>('/dashboard/visits-by-rep').then(r => r.data),
   getSalesByBusinessLine: () => api.get<{ name: string; value: number; color: string }[]>('/dashboard/sales-by-business-line').then(r => r.data),
   getRepStats: (rep_id: number) => api.get<RepStats>(`/dashboard/rep/${rep_id}/stats`).then(r => r.data),
   getDailyTracking: (date?: string) => api.get<{
