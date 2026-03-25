@@ -13,7 +13,7 @@ export default function RepDoctors() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: '', rut: '', medical_center: '', specialty: '', phone: '', email: '',
-    address: '', notes: '', business_line_id: '',
+    address: '', notes: '', business_line_id: '', visit_date: format(new Date(), 'yyyy-MM-dd'),
   });
   const [visitDoctor, setVisitDoctor] = useState<any>(null);
   const [visitDate, setVisitDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -39,13 +39,24 @@ export default function RepDoctors() {
     e.preventDefault();
     setLoading(true);
     try {
-      await doctorsApi.create({
-        ...form,
-        business_line_id: form.business_line_id ? parseInt(form.business_line_id) : undefined,
+      const { visit_date, ...doctorData } = form;
+      const newDoctor = await doctorsApi.create({
+        ...doctorData,
+        business_line_id: doctorData.business_line_id ? parseInt(doctorData.business_line_id) : undefined,
         rep_id: user?.rep_id,
       });
+      // Create completed visit if date provided
+      if (visit_date && user?.rep_id) {
+        await visitsApi.create({
+          doctor_id: newDoctor.id,
+          rep_id: user.rep_id,
+          scheduled_date: `${visit_date}T${format(new Date(), 'HH:mm')}:00`,
+          status: 'completed',
+          notes: 'Visita registrada al crear médico',
+        });
+      }
       setShowForm(false);
-      setForm({ name: '', rut: '', medical_center: '', specialty: '', phone: '', email: '', address: '', notes: '', business_line_id: '' });
+      setForm({ name: '', rut: '', medical_center: '', specialty: '', phone: '', email: '', address: '', notes: '', business_line_id: '', visit_date: format(new Date(), 'yyyy-MM-dd') });
       loadData();
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
@@ -229,6 +240,25 @@ export default function RepDoctors() {
                 <label className="label">Notas</label>
                 <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} className="input w-full" rows={2} placeholder="Observaciones adicionales..." />
               </div>
+
+              {/* Visit date */}
+              <div className="border-t border-gray-200 pt-4 mt-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <Calendar size={18} className="text-green-600" />
+                  <span className="font-medium text-gray-900 text-sm">Registrar visita completada</span>
+                </div>
+                <div>
+                  <label className="label">Fecha de la visita</label>
+                  <input
+                    type="date"
+                    value={form.visit_date}
+                    onChange={e => setForm({...form, visit_date: e.target.value})}
+                    className="input w-full"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Se registrará como visita completada en esta fecha</p>
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)} className="btn-secondary flex-1">Cancelar</button>
                 <button type="submit" disabled={loading} className="btn-primary flex-1">{loading ? 'Guardando...' : 'Crear Médico'}</button>
