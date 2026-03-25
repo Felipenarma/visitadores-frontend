@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Users, UserCheck, Briefcase, Upload, TrendingUp,
-  Calendar, Bot, Activity, LogOut, Stethoscope, BookOpen, Menu, X
+  Calendar, Bot, Activity, LogOut, Stethoscope, BookOpen, Menu, X, QrCode
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -23,6 +23,7 @@ const adminNav: NavItem[] = [
   { to: '/admin/sales', icon: <TrendingUp size={20} />, label: 'Ventas' },
   { to: '/admin/agent', icon: <Bot size={20} />, label: 'Agente IA' },
   { to: '/admin/knowledge', icon: <BookOpen size={20} />, label: 'Base de Conocimiento' },
+  { to: '/admin/images', icon: <QrCode size={20} />, label: 'Imagenes y QR' },
 ];
 
 const repNav: NavItem[] = [

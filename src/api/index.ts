@@ -122,6 +122,24 @@ export const knowledgeApi = {
   },
 };
 
+// Images
+export const imagesApi = {
+  getAll: (category?: string) => api.get('/images', { params: category ? { category } : {} }).then(r => r.data),
+  upload: (file: File, name: string, description: string, category: string, businessLineId?: number) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('category', category);
+    if (businessLineId) formData.append('business_line_id', String(businessLineId));
+    return api.post('/images', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data);
+  },
+  delete: (id: number) => api.delete(`/images/${id}`).then(r => r.data),
+  getUrl: (id: number) => `${API_URL}/images/${id}/file`,
+};
+
 // Seed
 export const seedApi = {
   seed: () => api.post('/seed').then(r => r.data),

@@ -18,6 +18,7 @@ import RepCalendar from './pages/rep/RepCalendar';
 import RepDoctors from './pages/rep/RepDoctors';
 import AIAgent from './pages/AIAgent';
 import KnowledgeBase from './pages/KnowledgeBase';
+import Images from './pages/admin/Images';
 
 function PrivateRoute({ children, role }: { children: React.ReactNode; role?: 'admin' | 'rep' }) {
   const { user } = useAuth();
@@ -50,6 +51,7 @@ function AppRoutes() {
               <Route path="sales" element={<SalesUpload />} />
               <Route path="agent" element={<AIAgent />} />
               <Route path="knowledge" element={<KnowledgeBase />} />
+              <Route path="images" element={<Images />} />
             </Routes>
           </Layout>
         </PrivateRoute>
