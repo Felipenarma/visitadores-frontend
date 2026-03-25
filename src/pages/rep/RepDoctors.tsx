@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Stethoscope, Phone, Mail, MapPin, X, Building2 } from 'lucide-react';
-import { doctorsApi, businessLinesApi } from '../../api';
+import { Plus, Search, Stethoscope, Phone, Mail, MapPin, X, Building2, CheckCircle, Calendar } from 'lucide-react';
+import { doctorsApi, businessLinesApi, visitsApi } from '../../api';
 import { useAuth } from '../../context/AuthContext';
+import { format } from 'date-fns';
 
 export default function RepDoctors() {
   const { user } = useAuth();
@@ -14,6 +15,11 @@ export default function RepDoctors() {
     name: '', rut: '', medical_center: '', specialty: '', phone: '', email: '',
     address: '', notes: '', business_line_id: '',
   });
+  const [visitDoctor, setVisitDoctor] = useState<any>(null);
+  const [visitDate, setVisitDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [visitNotes, setVisitNotes] = useState('');
+  const [savingVisit, setSavingVisit] = useState(false);
+  const [visitSuccess, setVisitSuccess] = useState<number | null>(null);
 
   const loadData = async () => {
     if (!user?.rep_id) return;
@@ -43,6 +49,25 @@ export default function RepDoctors() {
       loadData();
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
+  };
+
+  const handleRegisterVisit = async () => {
+    if (!visitDoctor || !user?.rep_id) return;
+    setSavingVisit(true);
+    try {
+      await visitsApi.create({
+        doctor_id: visitDoctor.id,
+        rep_id: user.rep_id,
+        scheduled_date: `${visitDate}T${format(new Date(), 'HH:mm')}:00`,
+        status: 'completed',
+        notes: visitNotes || `Visita registrada manualmente`,
+      });
+      setVisitDoctor(null);
+      setVisitNotes('');
+      setVisitSuccess(visitDoctor.id);
+      setTimeout(() => setVisitSuccess(null), 3000);
+    } catch (e) { console.error(e); }
+    finally { setSavingVisit(false); }
   };
 
   const filtered = doctors.filter(d =>
@@ -88,13 +113,70 @@ export default function RepDoctors() {
                   {doc.address && <span className="flex items-center gap-1"><MapPin size={14} /> {doc.address}</span>}
                 </div>
               </div>
-              {doc.business_line_name && (
-                <span className="text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 flex-shrink-0">{doc.business_line_name}</span>
-              )}
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                {doc.business_line_name && (
+                  <span className="text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-700">{doc.business_line_name}</span>
+                )}
+                {visitSuccess === doc.id ? (
+                  <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                    <CheckCircle size={14} /> Registrada
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => { setVisitDoctor(doc); setVisitDate(format(new Date(), 'yyyy-MM-dd')); setVisitNotes(''); }}
+                    className="text-xs px-3 py-1.5 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors flex items-center gap-1 font-medium"
+                  >
+                    <CheckCircle size={14} /> Registrar Visita
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Quick Visit Modal */}
+      {visitDoctor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm">
+            <div className="flex items-center justify-between p-5 border-b">
+              <h2 className="text-lg font-semibold">Registrar Visita</h2>
+              <button onClick={() => setVisitDoctor(null)} className="p-1 hover:bg-gray-100 rounded-lg"><X size={20} /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="bg-blue-50 rounded-xl p-3">
+                <p className="font-medium text-blue-900">{visitDoctor.name}</p>
+                <p className="text-xs text-blue-600">{[visitDoctor.specialty, visitDoctor.medical_center].filter(Boolean).join(' · ') || 'Sin detalles'}</p>
+              </div>
+              <div>
+                <label className="label">Fecha de la visita</label>
+                <input
+                  type="date"
+                  value={visitDate}
+                  onChange={e => setVisitDate(e.target.value)}
+                  className="input w-full"
+                />
+              </div>
+              <div>
+                <label className="label">Notas (opcional)</label>
+                <textarea
+                  value={visitNotes}
+                  onChange={e => setVisitNotes(e.target.value)}
+                  className="input w-full"
+                  rows={2}
+                  placeholder="Resultado de la visita, observaciones..."
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setVisitDoctor(null)} className="btn-secondary flex-1">Cancelar</button>
+                <button onClick={handleRegisterVisit} disabled={savingVisit} className="btn-primary flex-1 flex items-center justify-center gap-2">
+                  {savingVisit ? 'Guardando...' : <><CheckCircle size={16} /> Completada</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
