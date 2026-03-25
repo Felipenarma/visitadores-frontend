@@ -9,7 +9,7 @@ function RenderMessage({ content, isUser }: { content: string; isUser: boolean }
   let cleaned = content.replace(/\*\*/g, '').replace(/\*/g, '');
 
   // Find all URLs in text
-  const urlPattern = /(https?:\/\/[^\s<>"{}|\\^`\])+)/g;
+  const urlPattern = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g;
   const imageApiPattern = /\/api\/images\/\d+\/file/;
 
   const parts: { type: 'text' | 'url' | 'image'; value: string }[] = [];
