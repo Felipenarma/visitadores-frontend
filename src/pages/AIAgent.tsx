@@ -1,8 +1,58 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Loader2, Download, ExternalLink } from 'lucide-react';
 import { agentApi, repsApi } from '../api';
 import { useAuth } from '../context/AuthContext';
 import type { AgentMessage, MedicalRep } from '../types';
+
+function RenderMessage({ content, isUser }: { content: string; isUser: boolean }) {
+  // Detect URLs and image links
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const imageExtRegex = /\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$/i;
+  const imageApiRegex = /\/api\/images\/\d+\/file/;
+
+  const parts = content.split(urlRegex);
+
+  return (
+    <div className="whitespace-pre-wrap leading-relaxed">
+      {parts.map((part, i) => {
+        if (urlRegex.test(part)) {
+          urlRegex.lastIndex = 0;
+          const isImage = imageExtRegex.test(part) || imageApiRegex.test(part);
+
+          if (isImage) {
+            return (
+              <div key={i} className="my-2">
+                <img src={part} alt="QR / Imagen" className="max-w-[200px] rounded-lg border border-gray-200 shadow-sm" />
+                <div className="flex gap-2 mt-2">
+                  <a href={part} target="_blank" rel="noopener noreferrer"
+                    className={`inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors ${
+                      isUser ? 'bg-blue-500 text-white hover:bg-blue-400' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    }`}>
+                    <ExternalLink size={12} /> Ver
+                  </a>
+                  <a href={part} download
+                    className={`inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors ${
+                      isUser ? 'bg-blue-500 text-white hover:bg-blue-400' : 'bg-green-100 text-green-700 hover:bg-green-200'
+                    }`}>
+                    <Download size={12} /> Descargar
+                  </a>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+              className={`underline break-all ${isUser ? 'text-blue-100 hover:text-white' : 'text-blue-600 hover:text-blue-800'}`}>
+              {part}
+            </a>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </div>
+  );
+}
 
 export default function AIAgent() {
   const { user } = useAuth();
@@ -163,7 +213,7 @@ export default function AIAgent() {
                     ? 'bg-blue-600 text-white rounded-tr-sm'
                     : 'bg-gray-100 text-gray-800 rounded-tl-sm'
                 }`}>
-                  <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                  <RenderMessage content={msg.content} isUser={msg.role === 'user'} />
                 </div>
               </div>
             ))}
