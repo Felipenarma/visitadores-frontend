@@ -5,50 +5,69 @@ import { useAuth } from '../context/AuthContext';
 import type { AgentMessage, MedicalRep } from '../types';
 
 function RenderMessage({ content, isUser }: { content: string; isUser: boolean }) {
-  // Detect URLs and image links
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const imageExtRegex = /\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$/i;
-  const imageApiRegex = /\/api\/images\/\d+\/file/;
+  // Clean markdown bold/italic before processing
+  let cleaned = content.replace(/\*\*/g, '').replace(/\*/g, '');
 
-  const parts = content.split(urlRegex);
+  // Find all URLs in text
+  const urlPattern = /(https?:\/\/[^\s<>"{}|\\^`\])+)/g;
+  const imageApiPattern = /\/api\/images\/\d+\/file/;
+
+  const parts: { type: 'text' | 'url' | 'image'; value: string }[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = urlPattern.exec(cleaned)) !== null) {
+    // Add text before URL
+    if (match.index > lastIndex) {
+      parts.push({ type: 'text', value: cleaned.slice(lastIndex, match.index) });
+    }
+
+    const url = match[1].replace(/[)\].,;:!?]+$/, ''); // Clean trailing punctuation
+    const isImage = imageApiPattern.test(url) || /\.(png|jpg|jpeg|gif|webp)$/i.test(url);
+    parts.push({ type: isImage ? 'image' : 'url', value: url });
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < cleaned.length) {
+    parts.push({ type: 'text', value: cleaned.slice(lastIndex) });
+  }
+
+  if (parts.length === 0) {
+    parts.push({ type: 'text', value: cleaned });
+  }
 
   return (
-    <div className="whitespace-pre-wrap leading-relaxed">
+    <div className="whitespace-pre-wrap leading-relaxed break-words">
       {parts.map((part, i) => {
-        if (urlRegex.test(part)) {
-          urlRegex.lastIndex = 0;
-          const isImage = imageExtRegex.test(part) || imageApiRegex.test(part);
-
-          if (isImage) {
-            return (
-              <div key={i} className="my-2">
-                <img src={part} alt="QR / Imagen" className="max-w-[200px] rounded-lg border border-gray-200 shadow-sm" />
-                <div className="flex gap-2 mt-2">
-                  <a href={part} target="_blank" rel="noopener noreferrer"
-                    className={`inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors ${
-                      isUser ? 'bg-blue-500 text-white hover:bg-blue-400' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                    }`}>
-                    <ExternalLink size={12} /> Ver
-                  </a>
-                  <a href={part} download
-                    className={`inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors ${
-                      isUser ? 'bg-blue-500 text-white hover:bg-blue-400' : 'bg-green-100 text-green-700 hover:bg-green-200'
-                    }`}>
-                    <Download size={12} /> Descargar
-                  </a>
-                </div>
-              </div>
-            );
-          }
-
+        if (part.type === 'image') {
           return (
-            <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+            <div key={i} className="my-3">
+              <img src={part.value} alt="QR / Imagen" className="w-48 max-w-full rounded-lg border border-gray-200 shadow-sm" />
+              <div className="flex gap-2 mt-2">
+                <a href={part.value} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium">
+                  <ExternalLink size={14} /> Abrir
+                </a>
+                <a href={part.value} download="qr-code.png"
+                  className="inline-flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 font-medium">
+                  <Download size={14} /> Descargar
+                </a>
+              </div>
+            </div>
+          );
+        }
+
+        if (part.type === 'url') {
+          return (
+            <a key={i} href={part.value} target="_blank" rel="noopener noreferrer"
               className={`underline break-all ${isUser ? 'text-blue-100 hover:text-white' : 'text-blue-600 hover:text-blue-800'}`}>
-              {part}
+              {part.value.length > 50 ? part.value.slice(0, 50) + '...' : part.value}
             </a>
           );
         }
-        return <span key={i}>{part}</span>;
+
+        return <span key={i}>{part.value}</span>;
       })}
     </div>
   );
