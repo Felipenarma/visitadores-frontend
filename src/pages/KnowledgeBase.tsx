@@ -91,19 +91,23 @@ export default function KnowledgeBase() {
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
     setUploading(true);
     setUploadResult(null);
     try {
       const blId = uploadBL ? parseInt(uploadBL) : undefined;
-      const result = await knowledgeApi.upload(file, uploadCategory, blId);
-      setUploadResult(result);
-      if (result.success) {
-        loadData();
+      if (fileList.length === 1) {
+        const result = await knowledgeApi.upload(fileList[0], uploadCategory, blId);
+        setUploadResult(result);
+      } else {
+        const files = Array.from(fileList);
+        const result = await knowledgeApi.uploadMultiple(files, uploadCategory, blId);
+        setUploadResult(result);
       }
+      loadData();
     } catch (err: any) {
-      setUploadResult({ success: false, message: err?.response?.data?.detail || 'Error al procesar archivo' });
+      setUploadResult({ success: false, message: err?.response?.data?.detail || 'Error al procesar archivo(s)' });
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -254,13 +258,14 @@ export default function KnowledgeBase() {
                 <label className="label">Seleccionar archivo</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer" onClick={() => fileRef.current?.click()}>
                   <File size={32} className="mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">Haz clic para seleccionar un archivo</p>
-                  <p className="text-xs text-gray-400 mt-1">PDF, Word, Excel, CSV o texto</p>
+                  <p className="text-sm text-gray-600">Haz clic para seleccionar archivos</p>
+                  <p className="text-xs text-gray-400 mt-1">PDF, Word, Excel, CSV o texto (puedes seleccionar varios)</p>
                   <input
                     ref={fileRef}
                     type="file"
                     accept={ACCEPTED_FORMATS}
                     onChange={handleFileUpload}
+                    multiple
                     className="hidden"
                   />
                 </div>
@@ -276,14 +281,29 @@ export default function KnowledgeBase() {
               {uploadResult && (
                 <div className={`flex items-start gap-3 rounded-xl p-4 ${uploadResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
                   {uploadResult.success ? <CheckCircle size={20} className="text-green-500 mt-0.5" /> : <AlertCircle size={20} className="text-red-500 mt-0.5" />}
-                  <div>
+                  <div className="flex-1">
                     <p className={`text-sm font-medium ${uploadResult.success ? 'text-green-800' : 'text-red-800'}`}>
                       {uploadResult.message}
                     </p>
-                    {uploadResult.success && (
+                    {uploadResult.entries_created != null && (
                       <p className="text-xs text-green-600 mt-1">
-                        {uploadResult.entries_created} entrada(s) creada(s) · {uploadResult.total_characters?.toLocaleString()} caracteres extraídos
+                        {uploadResult.entries_created} entrada(s) creada(s) · {uploadResult.total_characters?.toLocaleString()} caracteres
                       </p>
+                    )}
+                    {uploadResult.total_entries_created != null && (
+                      <p className="text-xs text-green-600 mt-1">
+                        {uploadResult.total_entries_created} entrada(s) creada(s) · {uploadResult.total_characters?.toLocaleString()} caracteres
+                      </p>
+                    )}
+                    {uploadResult.files && (
+                      <div className="mt-2 space-y-1">
+                        {uploadResult.files.map((f: any, i: number) => (
+                          <div key={i} className={`text-xs flex items-center gap-1 ${f.success ? 'text-green-700' : 'text-red-700'}`}>
+                            {f.success ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
+                            {f.filename} {f.success ? `(${f.entries_created} entradas)` : `- ${f.message}`}
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>

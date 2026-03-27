@@ -18,6 +18,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
   const [seedMsg, setSeedMsg] = useState('');
+  const [chartMonth, setChartMonth] = useState(new Date().getMonth() + 1);
+  const [chartYear, setChartYear] = useState(new Date().getFullYear());
   const [trackingDate, setTrackingDate] = useState(new Date());
   const [dailyTracking, setDailyTracking] = useState<{
     date: string;
@@ -27,21 +29,26 @@ export default function AdminDashboard() {
   const load = async () => {
     setLoading(true);
     try {
-      const [s, t, vr, sl] = await Promise.all([
+      const [s, t, sl] = await Promise.all([
         dashboardApi.getStats(),
         dashboardApi.getTodayVisits(),
-        dashboardApi.getVisitsByRep(),
         dashboardApi.getSalesByBusinessLine(),
       ]);
       setStats(s);
       setTodayVisits(t);
-      setVisitsByRep(vr);
       setSalesByLine(sl);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadChartData = async () => {
+    try {
+      const vr = await dashboardApi.getVisitsByRep(chartMonth, chartYear);
+      setVisitsByRep(vr);
+    } catch (e) { console.error(e); }
   };
 
   const loadTracking = async (date: Date) => {
@@ -55,7 +62,18 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => { load(); }, []);
+  useEffect(() => { loadChartData(); }, [chartMonth, chartYear]);
   useEffect(() => { loadTracking(trackingDate); }, [trackingDate]);
+
+  const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const prevMonth = () => {
+    if (chartMonth === 1) { setChartMonth(12); setChartYear(y => y - 1); }
+    else setChartMonth(m => m - 1);
+  };
+  const nextMonth = () => {
+    if (chartMonth === 12) { setChartMonth(1); setChartYear(y => y + 1); }
+    else setChartMonth(m => m + 1);
+  };
 
   const handleSeed = async () => {
     setSeeding(true);
@@ -173,7 +191,20 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Visits by rep */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Visitas Completadas por Visitador (este mes)</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Visitas por Visitador</h2>
+            <div className="flex items-center gap-2">
+              <button onClick={prevMonth} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+                <ChevronLeft size={18} className="text-gray-600" />
+              </button>
+              <span className="text-sm font-medium text-gray-700 min-w-[120px] text-center">
+                {MONTH_NAMES[chartMonth - 1]} {chartYear}
+              </span>
+              <button onClick={nextMonth} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+                <ChevronRight size={18} className="text-gray-600" />
+              </button>
+            </div>
+          </div>
           {visitsByRep.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={visitsByRep}>

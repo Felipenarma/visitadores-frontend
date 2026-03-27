@@ -93,7 +93,7 @@ export const cardexApi = {
 export const dashboardApi = {
   getStats: () => api.get<DashboardStats>('/dashboard/stats').then(r => r.data),
   getTodayVisits: () => api.get<TodayVisit[]>('/dashboard/today').then(r => r.data),
-  getVisitsByRep: () => api.get<{ rep_name: string; completed: number; total: number; rep_id: number }[]>('/dashboard/visits-by-rep').then(r => r.data),
+  getVisitsByRep: (month?: number, year?: number) => api.get<{ rep_name: string; completed: number; total: number; rep_id: number }[]>('/dashboard/visits-by-rep', { params: { ...(month && { month }), ...(year && { year }) } }).then(r => r.data),
   getSalesByBusinessLine: () => api.get<{ name: string; value: number; color: string }[]>('/dashboard/sales-by-business-line').then(r => r.data),
   getRepStats: (rep_id: number) => api.get<RepStats>(`/dashboard/rep/${rep_id}/stats`).then(r => r.data),
   getDailyTracking: (date?: string) => api.get<{
@@ -121,6 +121,15 @@ export const knowledgeApi = {
     formData.append('category', category);
     if (businessLineId) formData.append('business_line_id', String(businessLineId));
     return api.post('/knowledge/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data);
+  },
+  uploadMultiple: (files: File[], category: string, businessLineId?: number) => {
+    const formData = new FormData();
+    files.forEach(f => formData.append('files', f));
+    formData.append('category', category);
+    if (businessLineId) formData.append('business_line_id', String(businessLineId));
+    return api.post('/knowledge/upload-multiple', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data);
   },
