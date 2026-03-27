@@ -25,6 +25,7 @@ export interface Doctor {
   rut?: string;
   medical_center?: string;
   specialty?: string;
+  city?: string;
   address?: string;
   phone?: string;
   email?: string;
