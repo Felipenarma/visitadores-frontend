@@ -26,6 +26,7 @@ export interface Doctor {
   medical_center?: string;
   specialty?: string;
   city?: string;
+  commune?: string;
   address?: string;
   phone?: string;
   email?: string;

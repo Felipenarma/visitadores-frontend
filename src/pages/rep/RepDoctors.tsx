@@ -12,7 +12,7 @@ export default function RepDoctors() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    name: '', rut: '', medical_center: '', specialty: '', city: '', phone: '', email: '',
+    name: '', rut: '', medical_center: '', specialty: '', city: '', commune: '', phone: '', email: '',
     address: '', notes: '', business_line_id: '', visit_date: format(new Date(), 'yyyy-MM-dd'),
   });
   const [visitDoctor, setVisitDoctor] = useState<any>(null);
@@ -56,7 +56,7 @@ export default function RepDoctors() {
         });
       }
       setShowForm(false);
-      setForm({ name: '', rut: '', medical_center: '', specialty: '', city: '', phone: '', email: '', address: '', notes: '', business_line_id: '', visit_date: format(new Date(), 'yyyy-MM-dd') });
+      setForm({ name: '', rut: '', medical_center: '', specialty: '', city: '', commune: '', phone: '', email: '', address: '', notes: '', business_line_id: '', visit_date: format(new Date(), 'yyyy-MM-dd') });
       loadData();
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
@@ -121,7 +121,7 @@ export default function RepDoctors() {
                   {doc.specialty && <span className="flex items-center gap-1"><Stethoscope size={14} /> {doc.specialty}</span>}
                   {doc.phone && <span className="flex items-center gap-1"><Phone size={14} /> {doc.phone}</span>}
                   {doc.email && <span className="flex items-center gap-1"><Mail size={14} /> {doc.email}</span>}
-                  {doc.city && <span className="flex items-center gap-1"><MapPin size={14} /> {doc.city}</span>}
+                  {(doc.city || doc.commune) && <span className="flex items-center gap-1"><MapPin size={14} /> {[doc.city, doc.commune].filter(Boolean).join(', ')}</span>}
                   {doc.address && <span className="flex items-center gap-1">{doc.address}</span>}
                 </div>
               </div>
@@ -225,19 +225,23 @@ export default function RepDoctors() {
                   <input value={form.city} onChange={e => setForm({...form, city: e.target.value})} className="input w-full" placeholder="Santiago, Viña del Mar..." />
                 </div>
                 <div>
-                  <label className="label">Especialidad</label>
-                  <input value={form.specialty} onChange={e => setForm({...form, specialty: e.target.value})} className="input w-full" placeholder="Dermatología" />
+                  <label className="label">Comuna</label>
+                  <input value={form.commune} onChange={e => setForm({...form, commune: e.target.value})} className="input w-full" placeholder="Providencia, Las Condes..." />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
+                  <label className="label">Especialidad</label>
+                  <input value={form.specialty} onChange={e => setForm({...form, specialty: e.target.value})} className="input w-full" placeholder="Dermatología" />
+                </div>
+                <div>
                   <label className="label">Teléfono</label>
                   <input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="input w-full" placeholder="+56 9 1234 5678" />
                 </div>
-                <div>
-                  <label className="label">Email</label>
-                  <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="input w-full" placeholder="doctor@email.com" />
-                </div>
+              </div>
+              <div>
+                <label className="label">Email</label>
+                <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="input w-full" placeholder="doctor@email.com" />
               </div>
               <div>
                 <label className="label">Dirección</label>
